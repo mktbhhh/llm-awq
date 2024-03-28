@@ -3,7 +3,7 @@ from torch.utils.cpp_extension import BuildExtension, CUDAExtension, CppExtensio
 
 
 extra_compile_args = {
-    "cxx": ["-g", "-O3", "-fopenmp", "-lgomp", "-std=c++17", "-DENABLE_BF16"],
+    "cxx": ["-g", "-O3", "-fopenmp", "-lgomp", "-std=c++17", "-DENABLE_BF16", "-I/usr/local/cuda-11.8/targets/x86_64-linux/include/"],
     "nvcc": [
         "-O3",
         "-std=c++17",
@@ -18,6 +18,7 @@ extra_compile_args = {
         "--expt-extended-lambda",
         "--use_fast_math",
         "--threads=8",
+        "--allow-unsupported-compiler",
     ],
 }
 
