@@ -171,3 +171,6 @@ cython_debug/
 **/*.pyc
 *.json
 __pycache__
+opt-125m/
+pile-val-backup/
+wikitext/
