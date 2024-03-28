@@ -18,7 +18,7 @@ def auto_clip_layer(
     group_size = (
         q_config["q_group_size"] if q_config["q_group_size"] > 0 else w.shape[1]
     )
-    input_feat = input_feat.view(-1, input_feat.shape[-1])
+    input_feat = input_feat.view(-1, input_feat.shape[-1])      # 按照60行，将512x768的块拼起来
     input_feat = input_feat.reshape(1, input_feat.shape[0], -1, group_size)
     input_feat = input_feat[:, 0 :: input_feat.shape[1] // n_sample_token]
     w = w.reshape(w.shape[0], 1, -1, group_size)

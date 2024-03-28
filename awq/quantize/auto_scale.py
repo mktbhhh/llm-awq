@@ -114,7 +114,7 @@ def auto_scale_block(module, module_kwargs, w_bit, q_config, input_feat):
             if isinstance(org_out, tuple):
                 org_out = org_out[0]
 
-        x_max = get_act_scale(x)
+        x_max = get_act_scale(x)    # 绝对值的平均值
 
         best_error = float("inf")
         best_ratio = -1
@@ -126,11 +126,11 @@ def auto_scale_block(module, module_kwargs, w_bit, q_config, input_feat):
         org_sd = {k: v.cpu() for k, v in block.state_dict().items()}
         for ratio in range(n_grid):
             ratio = ratio * 1 / n_grid
-            scales = x_max.pow(ratio).clamp(min=1e-4).view(-1)
+            scales = x_max.pow(ratio).clamp(min=1e-4).view(-1)  # 限定最小值为1e-4
             scales = scales / (scales.max() * scales.min()).sqrt()
             for fc in linears2scale:
                 fc.weight.mul_(scales.view(1, -1).to(fc.weight.device))
-                fc.weight.data = w_quantize_func(fc.weight.data) / (scales.view(1, -1))
+                fc.weight.data = w_quantize_func(fc.weight.data) / (scales.view(1, -1))     # 先缩放后进行量化，然后在转换回原始缩放
             out = block(x, **kwargs)
             if isinstance(out, tuple):
                 out = out[0]
@@ -155,7 +155,7 @@ def auto_scale_block(module, module_kwargs, w_bit, q_config, input_feat):
         return best_scales.detach()
 
     def _auto_get_scale(prev_op, layers, inp, module2inspect=None, kwargs={}):
-        # module2inspect: if given, we will check the output diff of this module instead of layers
+        # module2inspect: if given, we will check the output diff of this module instead of layers 该参数用来确定，使用哪个模块的输出来评估量化效果
         if module2inspect is None:
             assert len(layers) == 1
             module2inspect = layers[0]
@@ -175,7 +175,7 @@ def auto_scale_block(module, module_kwargs, w_bit, q_config, input_feat):
         # attention input
         scales_list.append(
             _auto_get_scale(
-                prev_op=module.self_attn_layer_norm,
+                prev_op=module.self_attn_layer_norm,    # 实际是后一层
                 layers=[
                     module.self_attn.q_proj,
                     module.self_attn.k_proj,
